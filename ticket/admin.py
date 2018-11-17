@@ -1,3 +1,8 @@
 from django.contrib import admin
 
-# Register your models here.
+from .models import LotteryLot, Lank, Number
+
+
+admin.site.register(Lank)
+admin.site.register(Number)
+admin.site.register(LotteryLot)
