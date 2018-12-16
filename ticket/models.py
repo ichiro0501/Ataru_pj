@@ -34,3 +34,12 @@ class Number(models.Model):
     def sold(self):
         self.is_sold = True
         self.save()
+
+class BuyingHistory(models.Model):
+    """購入履歴"""
+    number = models.ForeignKey(Number, on_delete=models.PROTECT)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, verbose_name='購入ユーザー', on_delete=models.PROTECT)
+    created_at = models.DateTimeField('日付', default=timezone.now)
+
+    def __str__(self):
+        return '{} {} '.format(self.number, self.user.email)

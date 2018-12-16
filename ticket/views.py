@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse
-from .models import LotteryLot, Lank, Number
+from .models import LotteryLot, Lank, Number, BuyingHistory
 from django.contrib.auth.models import User
 
 from django.http import HttpResponse
@@ -38,11 +38,32 @@ def buying(request):
             winning_num_in_this_lot.is_winning = True
             winning_num_in_this_lot.save()
 
-        # TODO: チケット購入処理
-        return redirect('main:index')
+        # TODO: 在庫枚数を超える注文が来た場合の処理
+        # 購入枚数
+        ticket_count = 1
+        # 購入時点の最新ロット
+        latest_lot = LotteryLot.objects.order_by("-created_at").first()
+        # チケットの在庫
+        remain_tickets = n.filter(lot_id=latest_lot, is_sold=False).order_by('number')
+        for i in random.sample(range(len(remain_tickets)), k=ticket_count):
+            sold_ticket = remain_tickets[i]
+            sold_ticket.is_sold = True
+            sold_ticket.save()
+            if len(n.filter(lot_id=latest_lot, is_sold=False)) == 0:
+                latest_lot.is_sold_out = True
+                latest_lot.save()
+            BuyingHistory.objects.create(number=sold_ticket, user=request.user)
+        # 上手く購入できた。Django側に購入履歴を入れておく
+        # BuyingHistory.objects.create(number=number, user=request.user)
 
-    context = {
+        return redirect('ticket:buying_done')
 
-    }
+    context = {}
 
     return render(request, 'ticket/buying.html', context)
+
+def buying_done(request):
+
+    context = {}
+
+    return render(request, 'ticket/buying_done.html', context)
