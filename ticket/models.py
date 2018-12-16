@@ -30,3 +30,7 @@ class Number(models.Model):
 
     def __str__(self):
         return '{0} (lot is {1})'.format(self.number, self.lot_id)
+
+    def sold(self):
+        self.is_sold = True
+        self.save()
