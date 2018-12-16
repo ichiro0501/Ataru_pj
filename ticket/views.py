@@ -38,13 +38,15 @@ def buying(request):
             winning_num_in_this_lot.is_winning = True
             winning_num_in_this_lot.save()
 
-        # TODO: 在庫枚数を超える注文が来た場合の処理
         # 購入枚数
         ticket_count = 1
         # 購入時点の最新ロット
         latest_lot = LotteryLot.objects.order_by("-created_at").first()
         # チケットの在庫
         remain_tickets = n.filter(lot_id=latest_lot, is_sold=False).order_by('number')
+        # TODO: 在庫枚数を超える注文が来た場合の処理
+        if len(remain_tickets) < ticket_count:
+            return redirect('ticket:buying')
         for i in random.sample(range(len(remain_tickets)), k=ticket_count):
             sold_ticket = remain_tickets[i]
             sold_ticket.is_sold = True
@@ -53,8 +55,6 @@ def buying(request):
                 latest_lot.is_sold_out = True
                 latest_lot.save()
             BuyingHistory.objects.create(number=sold_ticket, user=request.user)
-        # 上手く購入できた。Django側に購入履歴を入れておく
-        # BuyingHistory.objects.create(number=number, user=request.user)
 
         return redirect('ticket:buying_done')
 
